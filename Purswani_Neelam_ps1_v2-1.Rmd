@@ -1,0 +1,171 @@
+---
+title: 'IMT 573: Problem Set 1 - Exploring Data'
+author: "Neelam Purswani"
+date: 'Due: Tuesday, October 9, 2018 at or before 11:59AM'
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+<!-- This syntax can be used to add comments that are ignored during knitting process. -->
+
+##### Collaborators: 
+
+##### Instructions: #####
+
+Before beginning this assignment, please ensure you have access to R and RStudio. 
+
+1. Download the `problemset1.Rmd` file from Canvas. Open `problemset1.Rmd` in RStudio and supply your solutions to the assignment by editing `problemset1.Rmd`. 
+
+2. Replace the "Insert Your Name Here" text in the `author:` field with your own full name. Any collaborators must be listed on the top of your assignment. 
+
+3. Be sure to include well-documented (e.g. commented) code chucks, figures and clearly written text chunk explanations as necessary. Any figures should be clearly labeled and appropriately referenced within the text. If you are using more than just a standard function that you found from another source, please credit the source in the comments. For example: 
+
+```{r citing}
+# code adapted from "Example: Multiplication Table"  https://www.datamentor.io/r-programming/examples/multiplication-table/
+
+
+# assign num
+num = 8
+# use for loop to iterate 10 times
+for(i in 1:10) {
+print(paste(num,'x', i, '=', num*i))
+}
+```
+
+4. Collaboration on problem sets is acceptable, and even encouraged, but each student must turn in an individual write-up in his or her own words and his or her own work. The names of all collaborators must be listed on each assignment. Do not copy-and-paste from other students' responses or code.
+
+5. When you have completed the assignment and have **checked** that your code both runs in the Console and knits correctly when you click `Knit PDF`, rename the R Markdown file to `YourLastName_YourFirstName_ps1.Rmd`, knit a PDF and submit both the PDF file on Canvas.
+
+In this problem set you will need, at minimum, the following R packages. If you haven't yet installed them you will need to begin by using `install.packages()`
+
+```{r Setup, message=FALSE}
+# Load standard libraries
+library(tidyverse)
+library(dplyr)
+library(nycflights13)
+library(ggplot2)
+library(knitr)
+```
+
+#### Problem 1: Exploring the NYC Flights Data ####
+
+In this problem set we will use the data on all flights that departed NYC (i.e. JFK, LGA or EWR) in 2013. You can find this data in the `nycflights13` R package.
+
+##### (a) Importing and Inspecting Data: ##### 
+Load the data and describe in a short paragraph how the data was collected and what each variable represents. Perform a basic inspection of the data and discuss what you find.
+#```{r}
+#data(package='nycflights13')
+#```
+##### Observations for part(a) Importing and Inspecting Data: #####
+Data sets in package ‘nycflights13’:
+
+airlines                 Airline names.
+airports                 Airport metadata
+flights                  Flights data
+planes                   Plane metadata.
+weather                  Hourly weather data
+
+
+```{r}
+data_raw<- flights
+head(data_raw)
+tail(data_raw)
+```
+```{r}
+str(data_raw)
+```
+
+##### Explanation #####
+How the data was collected?
+The data was collected by Bureau of transportation statistics for the purpose of research and analysis.The dataset contains information about all the flights that departed from NYC in 2013. It contains data about 336776 flights in all and has 19 variables. I could not find the exact method or the steps in which the data was gathered by BTS but I believe it could be the telemetry data which is sent from the airplane to the air traffic control tower but there might be other ways also. 
+
+```{r}
+head(data_raw)
+tail(data_raw)
+```
+
+
+##### What each variable represents #####
+* year: integer- year of departure
+* month : integer - month of departure
+* day : integer - date of departure
+* dep_time: integer-actual departure time in hhmm notation
+* sched_dep_time: integer- scheduled departure time in hhmm notation
+* arr_time:integer- actual time of arrival in hhmm
+* sched_arr_time: integer- scheduled time of arrival in hhmm
+* arr_delay: double- arrival delay in minutes
+* dep_delay: double - departure delay in minutes
+* carrier: character string- airline carrier name
+* flight: flight identification number
+* tailnum : plane tail number
+* origin: 3 character long airport identification, from where the flight started
+* dest: 3 character long: destination airport identification abbreviation
+* air_time: the time for which the airplane is airborne in minutes
+* distance: distance traveled by a flight in miles
+* hour: hour of departure 
+* minute: minute of departure
+* time_hour: timestamp (not sure what it represents)
+
+```{r}
+summary(data_raw)
+```
+
+##### (b) Formulating Questions: ##### 
+Consider the NYC flights data. Formulate two motivating questions you want to explore using this data. Describe why these questions are interesting and how you might go about answering them. 
+
+Q1. How does distance play a role in affecting flight delays?
+Q2. How does time of the year play a role in flight delays? In arrival and departure delays both.
+
+##### (c) Exploring Data: ##### 
+
+For each of the questions you proposed in Problem 1b, perform an exploratory data analysis designed to address the question. At a minimum, you should produce two visualizations related to each question. Be sure to describe what the visuals show and how they speak to your question of interest.
+
+Q1. How does distance play a role in affecting flight delays? 
+Step1: Plotting a histogram of arrival delays to see the frequency of flight arrival delays in 2013 from NYC and a scatterplot of arrival delays and distance to see if the patterns observed in the dataset.
+
+Here's the histogram:
+```{r}
+ggplot(data = data_raw, aes(x=arr_delay)) + geom_histogram(binwidth=50,breaks=seq(-100,1000, by=100), fill=I("blue"), 
+      col=I("red"),
+      xlim=c(-100,1000))
+```
+The histogram of arrival delays helps us to understand the overall high level picture of the arrival delays in the year 2013 for airports in NYC. 
+From the histogram it appears: Approximately 190000 flights out of 336776 flights arrived before time i.e. more than 50% of the flights arrived either before time on the NYC airports in the year 2013.
+Approximately about 120000 flights either arrived on time or had a maximum delay of 99 minutes. They constitute about 35% of the flights. 
+Few flights(maybe 5000) arrived with a delay of 100 minutes or more.
+Very few flights had a delay of more than 20
+|0 minutes.
+
+
+Here's the scatterplot of distance in miles and arrival_delay in minutes:
+```{r}
+p <-ggplot(data = data_raw) + geom_point(mapping = aes(x = distance, y = arr_delay, color=arr_delay))
+p+labs(x="distance in miles", y="arrival delay in minutes")
+```
+
+From the scatterplot, the following observations can be made:
+Irrespective of the distance some flights arrived before time or on-time while on the other hand, even for shorter distances we see a considerable amount of delay in flight's arrival. It cannot be derived from the scatterplot if distance was a factor in influencing delay. We might have to consider other variables such as time of the year, airborne time, weather, aircraft configuration and aircraft engine parameters to determine the cause of delays. It might be the case where multiple variables have an influencing effect on the delays.
+ 
+##### Q2. How does time of the year play a role in flight delays? in arrival and departure delays both.
+ 
+```{r}
+ggplot(data = data_raw) +
+ geom_boxplot(mapping = aes(x = as.factor(month), y = arr_delay))
+
+```
+```{r}
+ggplot(data = data_raw) + geom_boxplot(mapping = aes(x = as.factor(month), y = dep_delay))
+```
+The following observations can be made about the arrival and departure delays of the flights: 
+In arrival delays, we see that some of the flights landed before time in all the months but on the other hand we see quite a few outliers for all the months with maximum arrival delay in January and then June. It could be because both of the times experience highest numbers in travels since its festive time and summer break time. 
+In departure delays, some of the flights did take off on time while we see a lot of flights getting delayed. Again, in the month of January, we see departure delays peak or shoot up and in June as well. It could also be because of the delay in arrivals, some of the departure may have been influenced.
+
+##### (d) Challenge Your Results: ##### 
+
+After completing the exploratory analysis from Problem 1c, do you have any concerns about your findings? Comment on any ethical and/or privacy concerns you have with your analysis.
+
+During the process of performing exploratory analysis, I came across :Removed 9430 rows containing missing values (geom_point). I wonder what the missing values are and how do they impact the results. Since 9430 is a considerable number of observations they have the potential to impact the results. Some of the ethical concerns that come to my mind are, how was the data collected, what algorithms were used, what was done in data cleaning process, was there a chance of any human bias could have arised in data during data munging and cleaning/storing process.
+With regards to privacy concerns, I did not see any personal identifiable information in the flights dataset so in my opinion it should be fine.
