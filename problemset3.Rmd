@@ -1,0 +1,75 @@
+---
+title: 'IMT 573: Problem Set 3 - Data Analysis'
+author: "Insert Your Name Here"
+date: 'Due: Tuesday, October 23, 2018 11:59AM'
+output: pdf_document
+---
+
+<!-- This syntax can be used to add comments that are ignored during knitting process. -->
+
+##### Collaborators: 
+
+##### Instructions: #####
+
+Before beginning this assignment, please ensure you have access to R and RStudio. 
+
+1. Download the `problemset3.Rmd` file from Canvas. Open `problemset3.Rmd` in RStudio and supply your solutions to the assignment by editing `problemset3.Rmd`.
+
+2. Replace the "Insert Your Name Here" text in the `author:` field with your own full name. Any collaborators must be listed on the top of your assignment. 
+
+3. Be sure to include well-documented (e.g. commented) code chucks, figures and clearly written text chunk explanations as necessary. Any figures should be clearly labeled and appropriately referenced within the text. If you are using more than just a standard function that you found from another source, please credit the source in the comments. For example: 
+
+```{r citing, include=FALSE}
+# code adapted from "Example: Multiplication Table"  
+# https://www.datamentor.io/r-programming/examples/multiplication-table/
+
+
+# assign num
+num = 8
+# use for loop to iterate 10 times
+for(i in 1:10) {
+print(paste(num,'x', i, '=', num*i))
+}
+```
+
+4. Collaboration on problem sets is acceptable, and even encouraged, but students must turn in an individual write-up in their own words and their own work. The names of all collaborators must be listed on each assignment. Do not copy-and-paste from other students' responses or code.
+
+5. When you have completed the assignment and have **checked** that your code both runs in the Console and knits correctly when you click `Knit PDF` or `Knit Word`, rename the R Markdown file to `YourLastName_YourFirstName_ps3.Rmd`, knit a PDF or DOC and submit both the PDF/DOC and the Rmd file on Canvas.
+
+##### Setup: #####
+
+In this problem set you will need, at minimum, the following R packages.
+
+```{r Setup, message=FALSE}
+# Load standard libraries
+library(tidyverse)
+```
+
+#### Problem 1: Flight Delays  ####
+
+Flight delays are often linked to weather conditions. How does weather impact flights from NYC? Utilize both the `flights` and `weather` datasets from the `nycflights13` package to explore this question. Include at least two visualizations to aid in communicating what you find.
+
+#### Problem 2: 50 States in the USA ####
+
+In this problem we will use the `state` dataset, available as part of the R statistical computing platforms. This data is related to the 50 states of the United States of America. Load the data and use it to answer the following questions. 
+
+##### (a) Describe the data and each variable it contains. Tidy the data, preparing it for a data analysis. 
+
+##### (b) Suppose you want to explore the relationship between a state's `Murder` rate and other characteristics of the state, for example population, illiteracy rate, and more. Begin by examining the bivariate relationships present in the data. What does your analysis suggest might be important variables to consider in building a model to explain variation in murder rates?
+
+##### (c) Choose one variable and fit a simple linear regression model, $Y = \beta_1X + \beta_0$, using the `lm()` function in R. Describe your results.
+
+##### (d) Develop a new research question of your own that you can address using the `state` dataset. Clearly state the question you are going to address. Provide at least one visualizations to support your exploration of this question. Discuss what you find.
+
+#### Problem 3: Income and Education ####
+
+The scatterplot below shows the relationship between per capita income (in thousands of dollars) and percent of population with a bachelor’s degree in 3,143 counties in the US in 2010.
+
+```{r pressure, echo=FALSE, fig.cap="Per Capita Income and Education", out.width = '100%'}
+knitr::include_graphics("income_education.png")
+```
+
+##### (a) What are the explanatory and response variables? 
+##### (b) Describe the relationship between the two variables. Make sure to discuss unusual observations, if any.
+##### (c) Can we conclude that having a bachelor’s degree increases one’s income? Why or why not?
+

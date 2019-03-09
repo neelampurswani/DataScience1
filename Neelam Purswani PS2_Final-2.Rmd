@@ -1,0 +1,212 @@
+---
+title: 'IMT 573: Problem Set 2 - Data Wrangling'
+author: "Neelam Purswani"
+date: 'Due: Tuesday, October 16, 2018 11:59AM'
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+<!-- This syntax can be used to add comments that are ignored during knitting process. -->
+
+##### Collaborators: 
+
+##### Instructions: #####
+
+Before beginning this assignment, please ensure you have access to R and RStudio.
+
+1. Download the `problemset2.Rmd` file from Canvas. Open `problemset2.Rmd` in RStudio and supply your solutions to the assignment by editing `problemset2.Rmd`.
+
+2. Replace the "Insert Your Name Here" text in the `author:` field with your own full name. Any collaborators must be listed on the top of your assignment. 
+
+3. Be sure to include well-documented (e.g. commented) code chucks, figures and clearly written text chunk explanations as necessary. Any figures should be clearly labeled and appropriately referenced within the text. If you are using more than just a standard function that you found from another source, please credit the source in the comments. For example: 
+
+```{r citing, include=FALSE}
+# code adapted from "Example: Multiplication Table"  
+# https://www.datamentor.io/r-programming/examples/multiplication-table/
+
+
+# assign num
+num = 8
+# use for loop to iterate 10 times
+for(i in 1:10) {
+print(paste(num,'x', i, '=', num*i))
+}
+```
+
+4. Collaboration on problem sets is acceptable, and even encouraged, but each student must turn in an individual write-up in his or her own words and his or her own work. The names of all collaborators must be listed on each assignment. Do not copy-and-paste from other students' responses or code.
+
+5. When you have completed the assignment and have **checked** that your code both runs in the Console and knits correctly when you click `Knit PDF` or `Knit Word`, rename the R Markdown file to `YourLastName_YourFirstName_ps1.Rmd`, knit a PDF or DOC and submit both the PDF/DOC and the Rmd file on Canvas.
+
+##### Setup: #####
+
+In this problem set you will need, at minimum, the following R packages.
+
+```{r Setup, message=FALSE}
+# Load standard libraries
+library(tidyverse)
+library(nycflights13)
+library(jsonlite)
+```
+
+#### Problem 1: Open Government Data ####
+
+Use the following code to obtain data on the Seattle Police Department Police Report Incidents.
+
+```{r}
+police_incidents <- fromJSON("https://data.seattle.gov/resource/hapq-73pk.json")
+```
+
+##### (a) Describe, in detail, what the data represents.
+```{r}
+str(police_incidents)
+```
+
+```{r}
+head(police_incidents)
+```
+```{r}
+tail(police_incidents)
+```
+
+##### (b) Describe each variable and what it measures. Be sure to note when data is missing. Confirm that each variable is appropriately cast - it has the correct data type. If any are incorrect, recast them to be in the appropriate format.
+Looking at the structure of data frame police_incidents, we see that all the variables are of character data-type. Some of these need to be changed to their appropriate types.
+crime_description, crime_type, police_beat, precinct, sector can be categorical variables and can be converted to factor data-type.
+and report_date can be converted to date data type.
+```{r}
+police_incidents$crime_description <- as.factor(police_incidents$crime_description)
+police_incidents$crime_type <- as.factor(police_incidents$crime_type)
+police_incidents$police_beat <- as.factor(police_incidents$police_beat)
+police_incidents$precinct <- as.factor(police_incidents$precinct)
+police_incidents$sector <- as.factor(police_incidents$sector)
+police_incidents$report_date<-as.Date(police_incidents$report_date)
+police_incidents$row_value_id <- as.integer(police_incidents$row_value_id)
+police_incidents$stat_value <- as.integer(police_incidents$row_value_id)
+head(police_incidents)
+```
+
+
+
+##### (c) Produce a clean dataset, according to the rules of tidy data discussed in class. Export the data for future analysis using the Rdata format.
+```{r}
+save(police_incidents, file="police_incidents.Rdata")
+```
+
+
+The Rules of the Tidy data say that:
+1. Each variable must have its own column.
+2. Each observation must have its own row.
+3. Each value must have its own cell.
+After adjusting the data type, we see that the data in the police_incidents is in correct format. 
+Each variable does have its own column: crime_type, police_beat, precinct, sector,report_date and sector.
+The observations have their own row: like the dataset captures crime_type in each sector and police identification and precinct where they belong.
+Each value does have its own cell.
+
+##### (d) Describe any concerns you might have about this data. This may include biases, missing data, or ethical concerns.
+Some of the concerns that come to mind are how was this data collected. Was it updated manually in the system, who updated the systems, how were the data points decided for capturing. Was there a way in which we could have added more data to this dataset had we captured it in a different format.Was there a potential human bias like focusing more on a particular precinct or sector or a particular type of crime. How frequently the data is refreshed and updated are some of the concerns which come to my mind.
+
+#### Problem 2:  Wrangling the NYC Flights Data ####
+
+In this problem set we will use the data on all flights that departed NYC (i.e. JFK, LGA or EWR) in 2013. You can find this data in the `nycflights13` R package. 
+
+##### (a) Importing Data: ##### 
+Load the data. 
+
+```{r}
+#loading the package nycflights13 again by calling library function
+library(nycflights13)
+```
+
+##### (b) Data Manipulation: ##### 
+Use the flights data to answer each of the following questions. Be sure to answer each question with a written response and supporting analysis.
+
+- How many flights were there from NYC airports to Minneapolis/St.Paul in 2013?
+```{r}
+# looking at the structure of flights dataset inside nycflights13 package in order to 
+# query it
+str(flights)
+```
+
+```{r}
+#creating a variable df.NYCtoMinP to store the results of the query
+df.NYCtoMinP <- flights %>%
+#selecting flights, origin and destination of flights
+  select(flight, origin, dest) %>%
+#filtering on the 3 airports in NYC and destination as Mineeapolis
+  filter(origin=="JFK" || origin=="LGA" || origin=="EWR", dest=="MSP") %>%
+#Counting the number of records which satisfy that condition
+  summarise(count=n())
+#Printing the results
+df.NYCtoMinP
+  
+```
+
+- How many airlines fly from NYC to Minneapolis/St.Paul?
+```{r}
+#creating a variable to store the results 
+df.NYCtoMinPaul <- flights %>%
+#using select statement to select the carriers originating from NYC, flying to Minneapolis
+  select(tailnum, origin, dest) %>%
+#filtering on the basis of tailnumber of the airplane t determine the number of airlines 
+  filter(origin=="JFK" || origin=="LGA" || origin=="EWR", dest=="MSP") %>%
+  distinct(tailnum) %>%
+#counting the number of records after filtering 
+  summarise(count= n())
+df.NYCtoMinPaul
+```
+
+- How many unique airplanes fly from NYC to Minneapolis/St.Paul?
+```{r}
+#creating a variable to store the results
+df.NYCtoMinPaulDistinct <- flights %>%
+  select(carrier, origin, dest) %>%
+  filter(origin=="JFK" || origin=="LGA" || origin=="EWR", dest=="MSP") %>%
+#counting distinct carriers
+  distinct(carrier) %>%
+#summarizing the count
+  summarise(count= n())
+#printing out the data frame containing the results
+df.NYCtoMinPaulDistinct
+```
+
+- What is the average arrival delay for flights from NYC to Minneapolis/St.Paul?
+```{r}
+#using mean function on arrival delay and storing it in AverageDelay variable. Printing out average delay variable.
+df.AverageDelay <- flights %>%
+  select(arr_delay, origin, dest) %>%
+  filter(origin=="JFK" || origin=="LGA" || origin=="EWR", dest=="MSP") %>%
+  distinct(carrier) %>%
+  summarise(mean(arr_delay, na.rm=TRUE))
+df.AverageDelay
+
+```
+
+- What proportion of flights to Minneapolis/St.Paul come from each NYC airport?
+
+```{r}
+#counting the number of flights departing from each airport by using group by so that we can use it to calculate Proportion later on.
+df.Proportion <- flights %>%
+  select(origin, dest) %>%
+  filter(origin=="JFK" || origin=="LGA" || origin=="EWR", dest=="MSP") %>%
+  group_by(origin)%>%
+  summarise(count=n())
+df.Proportion
+```
+```{r}
+#Calculating total flights and storing it in Total variable
+df.Total <- flights %>%
+  select(origin, dest) %>%
+  filter(origin=="JFK" || origin=="LGA" || origin=="EWR", dest=="MSP") %>%
+  summarise(count=n())
+df.Total
+```
+```{r}
+#Dividing each of it with total to get the proportion of each flight
+df.new<-df.Proportion %>%
+  mutate(proportion = df.Proportion$count/df.Total$count)
+df.new
+
+```
+
+

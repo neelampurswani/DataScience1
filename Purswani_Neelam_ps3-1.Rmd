@@ -1,0 +1,192 @@
+---
+title: 'IMT 573: Problem Set 3 - Data Analysis'
+author: "Neelam Purswani"
+date: 'Due: Tuesday, October 23, 2018 11:59AM'
+output: pdf_document
+---
+
+<!-- This syntax can be used to add comments that are ignored during knitting process. -->
+
+##### Collaborators: Akshay Khanna
+
+##### Instructions: #####
+
+Before beginning this assignment, please ensure you have access to R and RStudio. 
+
+1. Download the `problemset3.Rmd` file from Canvas. Open `problemset3.Rmd` in RStudio and supply your solutions to the assignment by editing `problemset3.Rmd`.
+
+2. Replace the "Insert Your Name Here" text in the `author:` field with your own full name. Any collaborators must be listed on the top of your assignment. 
+
+3. Be sure to include well-documented (e.g. commented) code chucks, figures and clearly written text chunk explanations as necessary. Any figures should be clearly labeled and appropriately referenced within the text. If you are using more than just a standard function that you found from another source, please credit the source in the comments. For example: 
+
+```{r citing, include=FALSE}
+# code adapted from "Example: Multiplication Table"  
+# https://www.datamentor.io/r-programming/examples/multiplication-table/
+
+
+# assign num
+num = 8
+# use for loop to iterate 10 times
+for(i in 1:10) {
+print(paste(num,'x', i, '=', num*i))
+}
+```
+
+4. Collaboration on problem sets is acceptable, and even encouraged, but students must turn in an individual write-up in their own words and their own work. The names of all collaborators must be listed on each assignment. Do not copy-and-paste from other students' responses or code.
+
+5. When you have completed the assignment and have **checked** that your code both runs in the Console and knits correctly when you click `Knit PDF` or `Knit Word`, rename the R Markdown file to `YourLastName_YourFirstName_ps3.Rmd`, knit a PDF or DOC and submit both the PDF/DOC and the Rmd file on Canvas.
+
+##### Setup: #####
+
+In this problem set you will need, at minimum, the following R packages.
+
+```{r Setup, message=FALSE}
+# Load standard libraries
+library(tidyverse)
+library(nycflights13)
+```
+
+#### Problem 1: Flight Delays  ####
+
+Flight delays are often linked to weather conditions. How does weather impact flights from NYC? Utilize both the `flights` and `weather` datasets from the `nycflights13` package to explore this question. Include at least two visualizations to aid in communicating what you find.
+```{r}
+data(flights)
+data(weather)
+flights_new <- drop_na(flights)
+```
+```{r}
+weather_new <- drop_na(weather)
+flights_new
+weather_new
+```
+```{r}
+str(flights_new)
+```
+```{r}
+str(weather_new)
+```
+
+```{r}
+dataframe_flights <- flights_new
+dataframe_weather <- weather_new
+dataframe_flights_weather <- merge(dataframe_flights, dataframe_weather)
+str(dataframe_flights_weather)
+```
+```{r}
+dataframe_flights_weather
+#creating a variable to store the results
+df.Flights_Weather_Distinct <- dataframe_flights_weather %>%
+  select(origin, arr_delay, dep_delay, dest, air_time, distance, wind_speed) %>%
+  filter(origin=="JFK", dest=="SFO")
+#counting distinct carriers
+ # distinct(carrier) %>%
+#summarizing the count
+ # summarise(count= n())
+#printing out the data frame containing the results
+df.Flights_Weather_Distinct
+```
+For this question, I am choosing to analyze the arrival and departure delay for all the flights leaving JFK airport and are SFO bound. My question is that: For the same distance flights, does wind speed have an effect on arrival/departure delays?
+
+
+```{r}
+p <-ggplot(data = df.Flights_Weather_Distinct ) + geom_smooth(mapping = aes(x =wind_speed , y =  arr_delay, color=wind_speed))
+p+labs(x="wind speed", y="arrival delay in minutes")
+```
+```{r}
+p <-ggplot(data = df.Flights_Weather_Distinct ) + geom_point(mapping = aes(x = wind_speed , y =  arr_delay, color=wind_speed))
+p+labs(x="wind speed", y="arrival delay in minutes")
+```
+From the above two graphs, we see that the arrival delay increases with increase in wind speed and then after a point it starts decreasing i.e. even at higher wind speed there were times when flights arrived on time. 
+```{r}
+p <-ggplot(data = df.Flights_Weather_Distinct ) + geom_point(mapping = aes(x = wind_speed , y =  dep_delay, color=wind_speed))
+p+labs(x="wind speed", y="departure delay in minutes")
+```
+
+```{r}
+p <-ggplot(data = df.Flights_Weather_Distinct ) + geom_smooth(mapping = aes(x = wind_speed , y = dep_delay, color=wind_speed))
+p+labs(x="wind speed", y="departure delay in minutes")
+```
+The graph above shows that the departure delay is constant at ~10.5 minutes for wind speed in the range if 6 to 36. From the graph it appears that departure delay is not related to wind speed.
+#### Problem 2: 50 States in the USA ####
+
+In this problem we will use the `state` dataset, available as part of the R statistical computing platforms. This data is related to the 50 states of the United States of America. Load the data and use it to answer the following questions. 
+
+##### (a) Describe the data and each variable it contains. Tidy the data, preparing it for a data analysis. 
+```{r}
+state_df<- data.frame(state.x77)
+summary(state_df)
+str(state_df)
+```
+ For this question, we use the state.x77 data set. State is a collection of data sets related to the 50 states of the United States of America.  Each of the columns in state_df represent:
+Population: Population estimate of various states as of July 1, 1975
+Income: per capita income of various states, as of 1974
+Illiteracy: illiteracy (1970, percent of population) in different states
+Life Exp: Avg Life expectancy in years (1969-71) 
+Murder: Murder rate per 100,000 population (1976) in different states
+HS Grad: Percentage of high-school graduates (1970) 
+Frost: Average number of days with minimum temperature below freezing (1931-1960) in capital or large city
+Area: land area in square miles
+
+##### (b) Suppose you want to explore the relationship between a state's `Murder` rate and other characteristics of the state, for example population, illiteracy rate, and more. Begin by examining the bivariate relationships present in the data. What does your analysis suggest might be important variables to consider in building a model to explain variation in murder rates?
+Considering Murder rate as our dependent variable ie. y
+
+```{r}
+mod <- lm(Murder ~. , data=state_df)
+summary(mod)
+```
+
+From the above linear modelig observations, we see that there is close to 81% variance in Murder rate. It appears that Population and Life Expectancy affect murder rates and the p-value is also significantly smaller than 0.05.
+Since there are many variables coming into play, we can use step lm function for stepwise regression, where the predictor variable is chosen automatically by the function based on some criteria.
+
+
+```{r}
+re_try <- step(lm(Murder ~. , data=state_df))
+
+```
+```{r}
+summary(re_try)
+```
+We can see that in the last step, a combination of listed 5 variables:Population, Illiteracy, Life Expectancy, Frost and Area explains about 81% (R-squared value) of the variance in murder rate.
+
+##### (c) Choose one variable and fit a simple linear regression model, $Y = \beta_1X + \beta_0$, using the `lm()` function in R. Describe your results.
+
+
+```{r}
+new_model <- lm(Murder ~ Illiteracy, state_df)
+summary(new_model)
+
+```
+The R-value obtained in the above method shows that there is 49% variance in the rate because of Illiteracy alone. But since the p-value is very small this, less than 0.05, it is probably by chance.
+
+##### (d) Develop a new research question of your own that you can address using the `state` dataset. Clearly state the question you are going to address. Provide at least one visualizations to support your exploration of this question. Discuss what you find.
+Is the model with Illiteracy as the predictor variable a good model to determine the murder rate in a State?
+```{r}
+par(mfrow=c(2,2))
+plot(new_model)
+```
+
+From the plot above, Residual plot appears scattered indicating  that some data transformation may be required for linearity. The random pattern indicates that this linear model provides a good fit to the data.
+
+```{r}
+p <-ggplot(data = state_df ) + geom_smooth(mapping = aes(x = Illiteracy , y = Murder, color=Illiteracy))
+p+labs(x="Illiteracy", y="Murder")
+```
+
+As observed in the graph above, Murder rate is increasing as illiteracy increases. They are linearly related. 
+
+#### Problem 3: Income and Education ####
+
+The scatterplot below shows the relationship between per capita income (in thousands of dollars) and percent of population with a bachelor’s degree in 3,143 counties in the US in 2010.
+
+```{r pressure, echo=FALSE, fig.cap="Per Capita Income and Education", out.width = '100%'}
+knitr::include_graphics("income_education.png")
+```
+
+##### (a) What are the explanatory and response variables?
+The explanatory variable, also known as the independent variable, in this case, is the variable on x-axis i.e. Percent with Bachelor's Degree
+The response variable, also known as the dependent variable, in this case, is the variable on y-axis, i.e. Per Capita Income.
+##### (b) Describe the relationship between the two variables. Make sure to discuss unusual observations, if any.
+From the image above, it appears that Per capita income increases as the Percentage of people with Bachelor's degree increases. 
+##### (c) Can we conclude that having a bachelor’s degree increases one’s income? Why or why not?
+Althought the scatterplot shows a direct correlation between Percentage of people with Bachelor's degree and Per capita income, we cannot conclude that only having a Bachelor's degree is the reason behind high per capita income. There could be various other factors or different sources of income for individuals in various states. As they say, correlation does not always indicate causation.
+
